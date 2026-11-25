@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /sorteos/{sorteoId} {
+      // Cualquiera puede leer un sorteo completo (necesario para ver el estado del panel)
+      allow read: if true;
+
+      // Solo se puede crear un nuevo sorteo con la estructura correcta
+      allow create: if request.resource.data.keys().hasAll(['nombre', 'creadoEn', 'participantes'])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.creadoEn is string
+        && request.resource.data.participantes is list
+        && request.resource.data.participantes.size() >= 3;
+
+      // Solo se puede actualizar el campo participantes (para revelar amigo secreto)
+      // La longitud de la lista no puede cambiar y solo se pueden marcar como revelados
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participantes'])
+        && request.resource.data.participantes.size() == resource.data.participantes.size();
+
+      // No se permite eliminar sorteos desde el cliente
+      allow delete: if false;
+    }
+  }
+}
+
