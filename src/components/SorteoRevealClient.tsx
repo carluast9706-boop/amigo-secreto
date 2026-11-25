@@ -103,6 +103,16 @@ export function SorteoRevealClient({ sorteoId }: SorteoRevealClientProps) {
   const totalRevelados =
     sorteo?.participantes.filter((p) => p.revelado).length ?? 0;
 
+  const seleccionado = useMemo(() => {
+    if (!sorteo || !effectiveSelectedId) return null;
+    return (
+      sorteo.participantes.find((p) => p.id === effectiveSelectedId) ?? null
+    );
+  }, [sorteo, effectiveSelectedId]);
+
+  const todosRevelados =
+    totalParticipantes > 0 && totalRevelados === totalParticipantes;
+
   async function handleReveal(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setRevealError(null);
@@ -276,7 +286,7 @@ export function SorteoRevealClient({ sorteoId }: SorteoRevealClientProps) {
                 htmlFor={selectId}
                 className="block text-sm font-semibold text-stone-900"
               >
-                Selecciona quién eres
+                Selecciona tu nombre
               </label>
               {selectorBloqueado && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-700">
@@ -290,7 +300,7 @@ export function SorteoRevealClient({ sorteoId }: SorteoRevealClientProps) {
               id={selectId}
               name="participante"
               required
-              disabled={selectorBloqueado || isRevealing}
+              disabled={selectorBloqueado || isRevealing || todosRevelados}
               value={effectiveSelectedId}
               aria-invalid={
                 selectTouchedInvalid && !effectiveSelectedId ? "true" : "false"
@@ -317,7 +327,9 @@ export function SorteoRevealClient({ sorteoId }: SorteoRevealClientProps) {
               }`}
             >
               <option value="" disabled>
-                Selecciona quién eres...
+                {todosRevelados
+                  ? "Todos los participantes ya revelaron su Amigo Secreto"
+                  : "Selecciona tu nombre..."}
               </option>
               {sorteo.participantes.map((p) => (
                 <option key={p.id} value={p.id} disabled={p.revelado}>
@@ -343,14 +355,23 @@ export function SorteoRevealClient({ sorteoId }: SorteoRevealClientProps) {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isRevealing || !effectiveSelectedId}
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
-          >
-            <Eye className="h-4 w-4" aria-hidden="true" />
-            {isRevealing ? "Revelando..." : "Revelar mi Amigo Secreto"}
-          </button>
+          {seleccionado && !seleccionado.revelado && (
+            <div className="animate-pop-in space-y-3 rounded-xl border border-rose-200 bg-rose-50/70 p-4">
+              <p className="text-sm text-stone-700">
+                Hola <strong className="text-stone-900">{seleccionado.nombre}</strong>,
+                cuando pulses el botón verás a quién te toca regalar y tu nombre
+                quedará bloqueado.
+              </p>
+              <button
+                type="submit"
+                disabled={isRevealing}
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+              >
+                <Eye className="h-4 w-4" aria-hidden="true" />
+                {isRevealing ? "Revelando..." : "Revelar mi Amigo Secreto"}
+              </button>
+            </div>
+          )}
         </form>
       </section>
 

@@ -124,6 +124,9 @@ export function SorteoCreator() {
   }
 
   if (sorteoCreado) {
+    const sharedPath = `/sorteo/${sorteoCreado.id}`;
+    const sharedUrl = origin ? `${origin}${sharedPath}` : sharedPath;
+
     return (
       <section
         aria-labelledby="sorteo-creado-titulo"
@@ -142,19 +145,19 @@ export function SorteoCreator() {
               {sorteoCreado.nombre}
             </h2>
             <p className="mt-1 text-sm text-stone-600">
-              Comparte cada enlace privado con su respectivo participante. La
-              lista está ordenada alfabéticamente para no revelar el orden del
-              sorteo.
+              Comparte este único enlace con todos los participantes (por
+              ejemplo, en el grupo de WhatsApp). Cada persona seleccionará su
+              nombre al entrar.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Link
-              href={`/sorteo/${sorteoCreado.id}`}
+              href={sharedPath}
               className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3.5 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
             >
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              Ver sala del sorteo
+              Abrir sorteo
             </Link>
             <button
               type="button"
@@ -167,31 +170,38 @@ export function SorteoCreator() {
           </div>
         </div>
 
-        <ul className="mt-6 divide-y divide-stone-100">
-          {sorteoCreado.participantes.map((p) => {
-            const path = `/sorteo/${sorteoCreado.id}?t=${p.token}`;
-            const fullUrl = origin ? `${origin}${path}` : path;
-            return (
+        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50/60 p-4 sm:p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">
+            Enlace único del sorteo
+          </p>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="min-w-0 flex-1 truncate rounded-lg border border-rose-200/80 bg-white px-3.5 py-2.5 font-mono text-xs text-stone-800 sm:text-sm">
+              {sharedUrl}
+            </p>
+            <div className="shrink-0">
+              <CopyButton
+                text={sharedUrl}
+                label={`Copiar enlace único del sorteo ${sorteoCreado.nombre}`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+            Participantes incluidos ({sorteoCreado.participantes.length})
+          </p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {sorteoCreado.participantes.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between"
+                className="rounded-full border border-stone-200 bg-stone-50 px-3.5 py-1.5 text-sm font-medium text-stone-800"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-stone-900">{p.nombre}</p>
-                  <p className="truncate font-mono text-xs text-stone-500">
-                    {fullUrl}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <CopyButton
-                    text={fullUrl}
-                    label={`Copiar enlace privado de ${p.nombre}`}
-                  />
-                </div>
+                {p.nombre}
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        </div>
       </section>
     );
   }
